@@ -1,6 +1,6 @@
 # Boredom-Maxxing v1 build spec
 
-Contract for all builders. Plan source of truth: `~/Documents/Obsidian Vault/Boredom-Maxxing/Plan (Claude)/`.
+Contract for all builders.
 Personal use, one user, reachable only over Tailscale. Timezone: `Asia/Jakarta` (WIB, +07:00, no DST) everywhere; use `zoneinfo`, never naive server-local dates.
 
 ## Layout

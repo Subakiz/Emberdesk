@@ -83,7 +83,7 @@ Skipped: new streak mechanics, cross-device celebration synchronization, full-sc
 
 ## Implementation review
 
-- Worktree: `/Users/nabils/.codex/worktrees/219d/Boredom-Maxxing`, branch `feature/streak-celebrations`.
+- Worktree branch: `feature/streak-celebrations`.
 - Replayable preview: `design/streak-preview.html`; the local preview server maps only this page and the three required static assets. It evaluates the production celebration helper without app bootstrap, service-worker registration, API calls, or real receipt writes.
 - Frontend checks: 56 tests pass, including the original Journal/motion regressions and nine earning/cancellation tests. Backend behavior and streak calculations are unchanged.
 - Inspected captures: light 390px, dark desktop 1100px, dark reduced-motion 320px. Physical iPhone motion and VoiceOver remain unchecked. The reviewed implementation was then applied to the live master checkout, preserving the pending LaTeX fix; changes remain uncommitted.
