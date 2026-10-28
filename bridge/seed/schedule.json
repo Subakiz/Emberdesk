@@ -1,0 +1,163 @@
+{
+  "_source": "schedule.png, transcribed 2026-10-21. weekday: 0=Senin (Mon) .. 4=Jumat (Fri). kind: K=kuliah, R=responsi. class_no = number in (K3)/(R6).",
+  "courses": [
+    {
+      "code": "BIO2101",
+      "name": "Biologi Umum",
+      "folder": null,
+      "start_week": null
+    },
+    {
+      "code": "MAT2111",
+      "name": "Matematika dan Berpikir Logis",
+      "folder": "MBL",
+      "start_week": null
+    },
+    {
+      "code": "IPB210A",
+      "name": "Agama Islam",
+      "folder": null,
+      "start_week": null
+    },
+    {
+      "code": "IPB210D",
+      "name": "Pendidikan Pancasila",
+      "folder": null,
+      "start_week": null
+    },
+    {
+      "code": "IPB210E",
+      "name": "Pendidikan Kewarganegaraan",
+      "folder": null,
+      "start_week": null
+    },
+    {
+      "code": "FIS2105",
+      "name": "Fisika Umum",
+      "folder": null,
+      "start_week": null
+    },
+    {
+      "code": "KOM2102",
+      "name": "Berpikir Komputasional",
+      "folder": null,
+      "start_week": null
+    },
+    {
+      "code": "IPB210C",
+      "name": "Pertanian Inovatif",
+      "folder": null,
+      "start_week": null
+    }
+  ],
+  "sessions": [
+    {
+      "course_code": "BIO2101",
+      "kind": "K",
+      "class_no": 3,
+      "weekday": 0,
+      "start": "08:00",
+      "end": "09:40",
+      "room": "RK. CCR 2.11"
+    },
+    {
+      "course_code": "MAT2111",
+      "kind": "K",
+      "class_no": 3,
+      "weekday": 0,
+      "start": "10:00",
+      "end": "11:40",
+      "room": "RK. CCR 2.16"
+    },
+    {
+      "course_code": "IPB210A",
+      "kind": "K",
+      "class_no": 6,
+      "weekday": 1,
+      "start": "08:00",
+      "end": "09:40",
+      "room": "RK. CCR 2.05"
+    },
+    {
+      "course_code": "MAT2111",
+      "kind": "R",
+      "class_no": 3,
+      "weekday": 1,
+      "start": "13:00",
+      "end": "14:40",
+      "room": "RK. CCR 2.12"
+    },
+    {
+      "course_code": "IPB210D",
+      "kind": "K",
+      "class_no": 6,
+      "weekday": 1,
+      "start": "15:00",
+      "end": "15:50",
+      "room": "RK. CCR 2.07"
+    },
+    {
+      "course_code": "IPB210D",
+      "kind": "R",
+      "class_no": 6,
+      "weekday": 1,
+      "start": "15:50",
+      "end": "17:30",
+      "room": "RK. CCR 2.07"
+    },
+    {
+      "course_code": "IPB210E",
+      "kind": "K",
+      "class_no": 6,
+      "weekday": 2,
+      "start": "15:00",
+      "end": "15:50",
+      "room": "RK. CCR 2.11"
+    },
+    {
+      "course_code": "IPB210E",
+      "kind": "R",
+      "class_no": 6,
+      "weekday": 2,
+      "start": "15:50",
+      "end": "17:30",
+      "room": "RK. CCR 2.11"
+    },
+    {
+      "course_code": "IPB210A",
+      "kind": "R",
+      "class_no": 6,
+      "weekday": 3,
+      "start": "10:00",
+      "end": "11:40",
+      "room": "Masjid Al-Hurriyyah"
+    },
+    {
+      "course_code": "FIS2105",
+      "kind": "K",
+      "class_no": 3,
+      "weekday": 3,
+      "start": "15:15",
+      "end": "16:55",
+      "room": "RK. CCR 1.06"
+    },
+    {
+      "course_code": "KOM2102",
+      "kind": "K",
+      "class_no": 14,
+      "weekday": 4,
+      "start": "09:00",
+      "end": "10:40",
+      "room": "RK. CCR 2.15"
+    },
+    {
+      "course_code": "IPB210C",
+      "kind": "K",
+      "class_no": 24,
+      "weekday": 4,
+      "start": "15:00",
+      "end": "16:40",
+      "room": "RK. Teaching LAB TPB.2.6"
+    }
+  ]
+}

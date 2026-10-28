@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boredom-Maxxing Design</title>
+<style>
+/* ============ BOARD (not part of the app) ============ */
+html { -webkit-text-size-adjust: 100%; }
+body.board {
+  margin: 0; background: #C9C6BF; color: #161513;
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+}
+.board-head { max-width: 860px; margin: 0 auto; padding: 40px 24px 8px; }
+.board-head h1 { font: 700 32px/1.1 ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif; margin: 0 0 10px; letter-spacing: -.02em; }
+.board-head p { margin: 0 0 6px; max-width: 70ch; }
+.roles { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; font-size: 13px; }
+.roles li { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.5); border-radius: 999px; padding: 4px 10px 4px 4px; }
+.roles i { width: 18px; height: 18px; border-radius: 50%; display: block; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+.board-row { max-width: 860px; margin: 0 auto; padding: 28px 24px; }
+.board-row > h2 { font: 700 20px/1.2 ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif; margin: 0 0 4px; }
+.board-row > p { margin: 0 0 16px; color: #3f3c37; max-width: 75ch; }
+.pair { display: flex; gap: 32px; align-items: flex-start; }
+.pair > figure { margin: 0; }
+.pair figcaption { font-size: 12px; font-weight: 600; color: #3f3c37; margin: 0 0 8px 4px; }
+body:has(.board-row:target) .board-head,
+body:has(.board-row:target) .board-row:not(:target) { display: none; }
+
+/* ============ THEME TOKENS (same hexes as DESIGN.md) ============ */
+.t-light {
+  --ground: #EEECE7; --surface: #FFFFFF; --surface-2: #E5E2DB; --line: rgba(22,21,19,.09);
+  --ink: #161513; --ink-2: #5E5951;
+  --accent: #FF5B1F; --accent-text: #B83A0C; --on-accent: #161513;
+  --slab: #2E1A10; --on-slab: #F6EEE8; --on-slab-2: #C4A897; --slab-line: transparent; --slab-chip: rgba(246,238,232,.12);
+  --nav: #161513; --on-nav: #F3F1EC; --nav-icon: #9C978F; --nav-active: #F3F1EC; --nav-active-ink: #161513;
+  --ok: #186B43; --ok-bg: #DCEFE3; --bad: #B8352A; --bad-bg: #F7E1DC;
+  --heat-0: #452819; --heat-1: #A33D14; --heat-2: #FF6A2E; --heat-3: #FFD9C2;
+  --shadow: 0 1px 2px rgba(22,21,19,.05), 0 10px 24px -14px rgba(22,21,19,.22);
+  --focus: #B83A0C; --selection: rgba(255,91,31,.22);
+  color-scheme: light;
+}
+.t-dark {
+  --ground: #0E0D0C; --surface: #1B1A18; --surface-2: #2A2825; --line: rgba(255,255,255,.08);
+  --ink: #F2EFEA; --ink-2: #A8A299;
+  --accent: #FF6A2E; --accent-text: #FF8A5C; --on-accent: #161513;
+  --slab: #3B1C0D; --on-slab: #F7ECE4; --on-slab-2: #C9A796; --slab-line: rgba(255,122,61,.18); --slab-chip: rgba(247,236,228,.10);
+  --nav: #EDEAE4; --on-nav: #161513; --nav-icon: #6A655E; --nav-active: #161513; --nav-active-ink: #F2EFEA;
+  --ok: #5BC98F; --ok-bg: #163324; --bad: #FF7B6B; --bad-bg: #3A1714;
+  --heat-0: #4E2B1A; --heat-1: #B0431A; --heat-2: #FF7A3D; --heat-3: #FFE0CC;
+  --shadow: none;
+  --focus: #FF8A5C; --selection: rgba(255,106,46,.30);
+  color-scheme: dark;
+}
+.phone {
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  --font-round: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --r-slab: 28px; --r-surface: 22px; --r-input: 14px; --r-thumb: 12px;
+  --ease: cubic-bezier(.2,.8,.2,1); --dur-1: 150ms; --dur-2: 220ms;
+  --tabbar-h: 64px; --safe-top: 54px; --safe-bottom: 34px;
+}
+
+/* ============ PHONE FRAME (board only) ============ */
+.phone {
+  position: relative; width: 390px; min-height: 844px; overflow: hidden;
+  border-radius: 44px; background: var(--ground); color: var(--ink);
+  font: 16px/1.45 var(--font-ui);
+  box-shadow: 0 0 0 10px #161513, 0 30px 60px -20px rgba(0,0,0,.45);
+}
+.phone ::selection { background: var(--selection); }
+.statusbar { height: var(--safe-top); display: flex; align-items: center; justify-content: space-between; padding: 6px 30px 0 34px; font: 600 16px/1 var(--font-ui); }
+.statusbar .batt { width: 26px; height: 12px; border-radius: 4px; border: 1.5px solid currentColor; opacity: .9; position: relative; }
+.statusbar .batt::after { content: ""; position: absolute; inset: 1.5px 5px 1.5px 1.5px; background: currentColor; border-radius: 1.5px; }
+.island { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 122px; height: 35px; border-radius: 20px; background: #000; }
+
+/* ============ APP COMPONENTS (proposed styles.css) ============ */
+.phone * { box-sizing: border-box; }
+main.view { padding: 8px 16px calc(var(--tabbar-h) + 40px + var(--safe-bottom)); }
+svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+svg.i.sm { width: 16px; height: 16px; }
+
+/* header */
+.head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px 0 16px; }
+.title { font: 700 34px/1.05 var(--font-round); letter-spacing: -.02em; margin: 0; }
+.sub { color: var(--ink-2); margin-top: 4px; font-size: 15px; }
+.iconbtn {
+  width: 44px; height: 44px; border-radius: 50%; border: 0; display: grid; place-items: center;
+  background: var(--surface); color: var(--ink); box-shadow: var(--shadow); flex: none; text-decoration: none;
+}
+.iconbtn-pair { display: flex; gap: 8px; }
+
+/* week strip */
+.week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 20px; }
+.day {
+  height: 62px; border-radius: 999px; background: var(--surface); color: var(--ink); text-decoration: none;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; box-shadow: var(--shadow); position: relative;
+}
+.day small { font-size: 12px; font-weight: 500; color: var(--ink-2); }
+.day b { font: 700 17px/1.1 var(--font-round); font-variant-numeric: tabular-nums; }
+.day[aria-current=date] { background: var(--nav); color: var(--on-nav); box-shadow: none; }
+.day[aria-current=date] small { color: var(--nav-icon); }
+.day.is-today::after { content: ""; position: absolute; bottom: 7px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+
+/* slab: the one focal block per screen */
+.slab {
+  background: var(--slab); color: var(--on-slab); border-radius: var(--r-slab); padding: 20px;
+  box-shadow: inset 0 0 0 1px var(--slab-line);
+}
+.slab .muted { color: var(--on-slab-2); }
+.slab-chip { display: inline-flex; align-items: center; gap: 6px; font: 600 13px/1 var(--font-ui); padding: 7px 11px; border-radius: 999px; background: var(--slab-chip); color: var(--on-slab); white-space: nowrap; }
+.hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.bignum { font: 700 56px/.95 var(--font-round); letter-spacing: -.03em; font-variant-numeric: tabular-nums; color: var(--accent); }
+.hero-name { font: 700 24px/1.15 var(--font-round); letter-spacing: -.01em; margin: 14px 0 4px; overflow-wrap: anywhere; }
+.hero-meta { font-size: 15px; color: var(--on-slab-2); margin: 0; }
+
+/* section heading */
+.sec { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 32px 4px 12px; }
+.sec h2 { font: 700 20px/1.2 var(--font-round); letter-spacing: -.01em; margin: 0; }
+.sec span { font-size: 14px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+/* surface + grouped list */
+.surface { background: var(--surface); border-radius: var(--r-surface); box-shadow: var(--shadow); }
+.list { padding: 0 16px; }
+.list > * + * { border-top: 1px solid var(--line); }
+.crow { display: flex; gap: 12px; align-items: flex-start; padding: 14px 0; list-style: none; cursor: pointer; }
+.crow::-webkit-details-marker { display: none; }
+.ctime { width: 50px; flex: none; font: 700 17px/1.25 var(--font-round); font-variant-numeric: tabular-nums; }
+.ctime small { display: block; font: 500 13px/1.3 var(--font-ui); color: var(--ink-2); }
+.cbody { flex: 1; min-width: 0; }
+.cname { font-weight: 600; font-size: 17px; line-height: 1.3; overflow-wrap: anywhere; hyphens: auto; }
+.cmeta { font-size: 14px; color: var(--ink-2); margin-top: 2px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chev { color: var(--ink-2); margin-top: 3px; transition: transform var(--dur-1) var(--ease); }
+details[open] > summary .chev { transform: rotate(90deg); }
+.cancelled .cname { text-decoration: line-through; text-decoration-thickness: 1.5px; color: var(--ink-2); }
+.cancelled .ctime { color: var(--ink-2); }
+.expand { padding: 0 0 16px 62px; }
+.row-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+
+/* chips */
+.chip { display: inline-flex; align-items: center; gap: 5px; font: 600 12px/1 var(--font-ui); padding: 6px 10px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); white-space: nowrap; }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.bad { background: var(--bad-bg); color: var(--bad); }
+.chip.accent { background: transparent; color: var(--accent-text); box-shadow: inset 0 0 0 1.5px currentColor; }
+
+/* buttons */
+.btn {
+  appearance: none; border: 0; min-height: 48px; padding: 0 22px; border-radius: 999px; cursor: pointer;
+  font: 600 16px/1 var(--font-ui); display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--accent); color: var(--on-accent); text-decoration: none;
+  transition: transform var(--dur-1) var(--ease), opacity var(--dur-1);
+}
+.btn:active { transform: scale(.97); }
+.btn.block { width: 100%; }
+.btn.neutral { background: var(--surface-2); color: var(--ink); }
+.btn.quiet { background: transparent; color: var(--ink); min-height: 44px; padding: 0 12px; }
+.btn.danger { background: transparent; color: var(--bad); min-height: 44px; padding: 0 12px; }
+.btn.sm { min-height: 44px; padding: 0 16px; font-size: 15px; }
+.btn[disabled], .btn.disabled { opacity: .4; pointer-events: none; }
+.btn:focus-visible, .iconbtn:focus-visible, .day:focus-visible, summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* tasks */
+.task { padding: 16px; margin-bottom: 12px; }
+.task-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+.task-text { font-size: 17px; font-weight: 600; line-height: 1.35; margin: 0; overflow-wrap: anywhere; }
+.task.done .task-text { font-weight: 500; color: var(--ink-2); }
+.task-proof { display: flex; gap: 12px; align-items: center; margin-top: 12px; }
+.thumb { width: 52px; height: 52px; border-radius: var(--r-thumb); flex: none; background: linear-gradient(135deg, #8b9a7a, #556247 60%, #3a4431); }
+.thumb.screen { background: linear-gradient(160deg, #2b3a55, #11161f 70%); }
+.thumb.paper { background: linear-gradient(160deg, #f1ead8, #d8cdb3); }
+.verdict { display: flex; gap: 6px; align-items: flex-start; font-size: 14px; line-height: 1.35; margin: 0; }
+.verdict.ok { color: var(--ok); } .verdict.bad { color: var(--bad); } .verdict.plain { color: var(--ink-2); }
+.verdict svg { margin-top: 1px; }
+.task .row-actions { margin-top: 14px; }
+.appeal { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.appeal p { font-size: 13px; color: var(--ink-2); margin: 8px 0 0; }
+.locked { display: flex; gap: 14px; align-items: center; padding: 18px 16px; background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); border-radius: var(--r-surface); }
+.locked .lk { width: 44px; height: 44px; border-radius: 50%; background: var(--surface-2); display: grid; place-items: center; color: var(--ink-2); flex: none; }
+.locked b { display: block; font-weight: 600; font-size: 17px; }
+
+/* forms */
+.field { display: block; font-size: 13px; font-weight: 500; color: var(--ink-2); margin-bottom: 12px; }
+.input, .phone textarea, .phone select {
+  display: block; width: 100%; margin-top: 6px; border: 0; border-radius: var(--r-input);
+  background: var(--surface-2); color: var(--ink); padding: 13px 14px; font: 16px/1.35 var(--font-ui); caret-color: var(--accent);
+  appearance: none; -webkit-appearance: none; min-height: 48px;
+}
+.phone textarea { min-height: 104px; resize: none; }
+.input::placeholder, .phone textarea::placeholder { color: var(--ink-2); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.disclose { list-style: none; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 16px; cursor: pointer; font-weight: 600; font-size: 17px; }
+.disclose::-webkit-details-marker { display: none; }
+.disclose .grow { flex: 1; min-width: 0; }
+.disclose small { display: block; font-weight: 400; font-size: 14px; color: var(--ink-2); margin-top: 1px; }
+.disclose .lead { color: var(--ink-2); }
+.form-body { padding: 4px 16px 16px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--surface-2); border-radius: 999px; padding: 4px; margin-top: 6px; }
+.seg span { text-align: center; padding: 10px 0; border-radius: 999px; font: 600 15px/1 var(--font-ui); color: var(--ink-2); }
+.seg span.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.select-like { display: flex; justify-content: space-between; align-items: center; }
+
+/* markdown briefing */
+.md { font-size: 16px; line-height: 1.5; overflow-wrap: anywhere; }
+.md h3 { font: 700 19px/1.25 var(--font-round); margin: 0 0 8px; }
+.md h4 { font-size: 15px; font-weight: 600; margin: 18px 0 6px; color: var(--ink); }
+.md p { margin: 8px 0; }
+.md ul, .md ol { margin: 6px 0; padding-left: 20px; }
+.md li { margin: 4px 0; }
+.md li::marker { color: var(--accent-text); }
+.md code { background: var(--surface-2); border-radius: 6px; padding: 1px 6px; font: .9em ui-monospace, "SF Mono", Menlo, monospace; }
+.brief-inline { font-size: 15px; }
+.brief-inline h3 { font-size: 17px; }
+.brief-inline h4 { margin-top: 12px; }
+
+/* progress */
+.heat { display: grid; grid-template-columns: 12px 1fr; gap: 8px; margin-top: 14px; }
+.heat .dl { display: grid; grid-template-rows: repeat(7, 1fr); gap: 3px; font: 600 9px/1 var(--font-ui); color: var(--on-slab-2); align-items: center; }
+.heat .cells { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, auto); grid-template-columns: repeat(16, 1fr); gap: 3px; }
+.cell { aspect-ratio: 1; border-radius: 4px; background: var(--heat-0); }
+.cell.l1 { background: var(--heat-1); } .cell.l2 { background: var(--heat-2); } .cell.l3 { background: var(--heat-3); }
+.cell.future { background: transparent; box-shadow: inset 0 0 0 1px var(--slab-chip); }
+.cell.today { outline: 2px solid var(--on-slab); outline-offset: 1px; }
+.heat-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 13px; color: var(--on-slab-2); }
+.legend { display: flex; align-items: center; gap: 4px; }
+.legend .cell { width: 11px; }
+.slab-title { display: flex; justify-content: space-between; align-items: baseline; font-weight: 600; font-size: 15px; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.tile { padding: 18px 16px 14px; }
+.tile .num { font: 700 44px/1 var(--font-round); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.tile .num.hot { color: var(--accent-text); }
+.tile .lab { font-size: 14px; color: var(--ink-2); margin-top: 8px; }
+.cols { display: grid; grid-template-columns: repeat(14, 1fr); gap: 5px; align-items: end; height: 120px; padding: 0 2px; }
+.cols i { display: block; border-radius: 6px 6px 3px 3px; background: var(--accent); min-height: 4px; }
+.cols i.none { background: var(--surface-2); height: 4px; }
+.cols-x { display: grid; grid-template-columns: repeat(14, 1fr); gap: 5px; margin-top: 8px; font: 600 11px/1 var(--font-ui); color: var(--ink-2); text-align: center; padding: 0 2px; }
+.cols-x .now { color: var(--ink); }
+.chart-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+.chart-top b { font: 700 28px/1 var(--font-round); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.chart-top span { font-size: 13px; color: var(--ink-2); }
+.sum { padding: 14px 0; }
+.sum b { display: block; font-size: 13px; font-weight: 600; color: var(--ink-2); margin-bottom: 4px; }
+.sum p { margin: 0; white-space: pre-wrap; }
+
+/* mind */
+.quote { font: 600 26px/1.25 var(--font-ui); letter-spacing: -.015em; margin: 0; overflow-wrap: anywhere; text-wrap: pretty; }
+.quote-by { margin-top: 18px; font-size: 15px; }
+.quote-by b { display: block; font-weight: 600; }
+.quote-by span { color: var(--on-slab-2); font-size: 14px; }
+.qrow { padding: 16px 0; }
+.qrow p { margin: 0 0 6px; overflow-wrap: anywhere; }
+.qrow .cmeta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.qfoot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; }
+
+/* more */
+.lockrow { display: flex; justify-content: space-between; padding: 10px 0; font-size: 15px; border-top: 1px solid var(--slab-chip); }
+.lockrow span:last-child { color: var(--on-slab-2); font-variant-numeric: tabular-nums; }
+.slab summary { list-style: none; display: flex; align-items: center; justify-content: space-between; min-height: 44px; margin-top: 10px; font-weight: 600; cursor: pointer; }
+.slab summary::-webkit-details-marker { display: none; }
+.slab .chev { color: var(--on-slab-2); }
+.kv { display: flex; justify-content: space-between; gap: 16px; padding: 13px 0; font-size: 15px; }
+.kv span:last-child { color: var(--ink-2); text-align: right; overflow-wrap: anywhere; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); margin-right: 6px; vertical-align: 1px; }
+.dot.off { background: var(--ink-2); }
+.course { padding: 12px 0 16px; }
+.course .line { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+.course .line .input { margin: 0; flex: 1; }
+ol.steps { margin: 0; padding: 0 0 0 20px; font-size: 15px; }
+ol.steps li { margin-bottom: 8px; }
+ol.steps li::marker { color: var(--ink-2); font-weight: 600; }
+.note { font-size: 13px; color: var(--ink-2); margin: 8px 0 0; }
+.mono-url { font: 13px/1.4 ui-monospace, "SF Mono", Menlo, monospace; overflow-wrap: anywhere; }
+
+/* tab bar */
+.scrim { position: absolute; left: 0; right: 0; bottom: 0; height: 150px; pointer-events: none; background: linear-gradient(to bottom, transparent, var(--ground) 62%); }
+.tabbar {
+  position: absolute; left: 16px; right: 16px; bottom: calc(var(--safe-bottom) - 8px); height: var(--tabbar-h);
+  display: flex; align-items: center; justify-content: space-between; padding: 8px; border-radius: 999px;
+  background: var(--nav); box-shadow: 0 12px 28px -10px rgba(0,0,0,.45);
+}
+.tab { height: 48px; min-width: 48px; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--nav-icon); text-decoration: none; font: 600 15px/1 var(--font-ui); padding: 0 14px; }
+.tab svg.i { width: 22px; height: 22px; }
+.tab[aria-current=page] { background: var(--nav-active); color: var(--nav-active-ink); padding: 0 18px 0 14px; }
+.homebar { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 134px; height: 5px; border-radius: 3px; background: var(--ink); opacity: .85; }
+
+/* toast, offline, empty, skeleton */
+.toast { display: inline-flex; align-items: center; gap: 8px; background: var(--nav); color: var(--on-nav); padding: 12px 18px; border-radius: 999px; font-size: 15px; font-weight: 500; box-shadow: 0 12px 28px -10px rgba(0,0,0,.45); }
+.offline { position: sticky; top: 0; z-index: 2; margin: 0 16px 4px; display: flex; gap: 10px; align-items: center; padding: 11px 14px; border-radius: 16px; background: var(--surface-2); color: var(--ink); font-size: 14px; line-height: 1.35; }
+.offline b { font-weight: 600; }
+.empty { padding: 22px 18px; display: flex; gap: 14px; align-items: flex-start; }
+.empty .ic { width: 44px; height: 44px; border-radius: 50%; background: var(--surface-2); display: grid; place-items: center; color: var(--ink-2); flex: none; }
+.empty b { display: block; font-weight: 600; font-size: 17px; margin-top: 2px; }
+.empty p { margin: 2px 0 0; color: var(--ink-2); font-size: 15px; }
+.skel { background: var(--surface-2); border-radius: 12px; }
+.skel.slab-s { height: 168px; border-radius: var(--r-slab); }
+.skel.line { height: 14px; border-radius: 7px; margin: 10px 0; }
+.spin { animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } .phone * { transition: none !important; } }
+
+.state-cap { font: 600 12px/1.3 var(--font-ui); color: var(--ink-2); margin: 22px 4px 8px; }
+.state-cap:first-child { margin-top: 6px; }
+</style>
+</head>
+<body class="board">
+
+<!-- icon sprite: one stroke family, 2px, round caps -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-bars" viewBox="0 0 24 24"><path d="M6 20v-7M12 20V5M18 20v-10"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3.5l1.8 5.2 5.2 1.8-5.2 1.8L12 17.5l-1.8-5.2L5 10.5l5.2-1.8z"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.5-2h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-cloud-off" viewBox="0 0 24 24"><path d="M3 3l18 18M8.5 7.6A5 5 0 0 1 16.6 10H17a3.5 3.5 0 0 1 2.4 6M16 18H7a4 4 0 0 1-1.3-7.8"/></symbol>
+  <symbol id="i-spin" viewBox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 0 8.5 8.5"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 5.5A1.5 1.5 0 0 1 6.5 4H19v14H6.5A1.5 1.5 0 0 0 5 19.5zM5 19.5A1.5 1.5 0 0 0 6.5 21H19"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4.5l3 2"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.5l7 3v5.5c0 4.2-3 7.2-7 8.5-4-1.3-7-4.3-7-8.5V6.5z"/></symbol>
+  <symbol id="i-hash" viewBox="0 0 24 24"><path d="M9 4L7 20M17 4l-2 16M4.5 9h15M4 15h15"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/></symbol>
+</svg>
+
+<header class="board-head">
+  <h1>Boredom-Maxxing Design</h1>
+  <p><b>Point of view:</b> a quiet page with one warm, heavy thing on it. Every screen gets exactly one ember slab for the thing that matters right now: the next class, the streak, today's quote or the lock count. Everything else sits on calm stone surfaces. Orange is only for acting and for data. Ink (bone in dark mode) is only for navigation.</p>
+  <p>Each row shows the same screen in light and dark. iPhone frame: 390 × 844 points, cropped to full content length. Fonts are SF Pro and SF Pro Rounded (<code>ui-rounded</code>) only.</p>
+  <ul class="roles">
+    <li><i style="background:#EEECE7"></i>Ground #EEECE7 / #0E0D0C</li>
+    <li><i style="background:#FFFFFF"></i>Surface #FFF / #1B1A18</li>
+    <li><i style="background:#2E1A10"></i>Slab (focal) #2E1A10 / #3B1C0D</li>
+    <li><i style="background:#FF5B1F"></i>Action + data #FF5B1F / #FF6A2E</li>
+    <li><i style="background:#161513"></i>Navigation #161513 / #EDEAE4</li>
+  </ul>
+</header>
+
+<section class="board-row" id="today"><h2>Today</h2><p>The week strip replaces the arrows and the repeated weekday title. The next class becomes the slab. All classes sit in one grouped list, and a row opens in place to show its briefing; "Cancel class" lives inside the open row. Only the first unfinished task gets the orange button. The fixed-height scrim stops the tab bar from colliding with content.</p><div class="pair" data-screen="s-today"></div></section>
+<section class="board-row" id="class"><h2>Class detail <code>#/class/&lt;session_id&gt;</code></h2><p>The page the Calendar alert opens. The class itself is the slab, the briefing is open by default and is the only reading surface, and cancelling sits last as a quiet destructive action with its rule spelled out.</p><div class="pair" data-screen="s-class"></div></section>
+<section class="board-row" id="progress"><h2>Progress</h2><p>The heatmap becomes the slab. The tiles put the label under the number (no caps eyebrows). The 14 study-time rows become a single column chart with its total. The note (the screen's only action) moves above study time.</p><div class="pair" data-screen="s-progress"></div></section>
+<section class="board-row" id="mind"><h2>Mind</h2><p>The quote is the slab. "Add a quote" collapses into one row under it. All 40 quotes share one list, and your own quotes are marked "Yours" with Remove beside them.</p><div class="pair" data-screen="s-mind"></div></section>
+<section class="board-row" id="more"><h2>More</h2><p>Five equal sections become one slab (the lock count) and two grouped lists: Setup, where each item opens in place, and Bridge, which shows the host name instead of a raw URL.</p><div class="pair" data-screen="s-more"></div></section>
+<section class="board-row" id="offline"><h2>Today: offline and empty</h2><p>The offline banner sticks under the status bar. A day with no classes shows a teaching empty state instead of the slab. Before 06:00, the three tasks show as one locked card. Every mutation is dimmed.</p><div class="pair" data-screen="s-offline"></div></section>
+<section class="board-row" id="states"><h2>Component states</h2><p>Task states that do not fit on one day: judging, passed on appeal, not generated yet. Also the replacement form open, the toast, loading skeletons and no study data.</p><div class="pair" data-screen="s-states"></div></section>
+
+<!-- ======================= SCREENS ======================= -->
+
+<template id="tabs-today"><div class="scrim"></div><nav class="tabbar" aria-label="Sections"><a class="tab" aria-current="page" href="#"><svg class="i"><use href="#i-home"/></svg>Today</a><a class="tab" href="#" aria-label="Progress"><svg class="i"><use href="#i-bars"/></svg></a><a class="tab" href="#" aria-label="Mind"><svg class="i"><use href="#i-spark"/></svg></a><a class="tab" href="#" aria-label="More"><svg class="i"><use href="#i-more"/></svg></a></nav><div class="homebar"></div></template>
+
+<template id="s-today">
+<main class="view">
+  <div class="head">
+    <div><h1 class="title">Today</h1><div class="sub">Wednesday 21 October</div></div>
+    <div class="iconbtn-pair"><a class="iconbtn" href="#" aria-label="Previous week"><svg class="i"><use href="#i-left"/></svg></a><a class="iconbtn" href="#" aria-label="Next week"><svg class="i"><use href="#i-right"/></svg></a></div>
+  </div>
+  <nav class="week" aria-label="Week of 19 October">
+    <a class="day" href="#"><small>Mon</small><b>19</b></a><a class="day" href="#"><small>Tue</small><b>20</b></a><a class="day is-today" aria-current="date" href="#"><small>Wed</small><b>21</b></a><a class="day" href="#"><small>Thu</small><b>22</b></a><a class="day" href="#"><small>Fri</small><b>23</b></a><a class="day" href="#"><small>Sat</small><b>24</b></a><a class="day" href="#"><small>Sun</small><b>25</b></a>
+  </nav>
+
+  <section class="slab" aria-label="Next class">
+    <div class="hero-top"><span class="bignum">13:00</span><span class="slab-chip">Next · in 2h 56m</span></div>
+    <h2 class="hero-name">Matematika dan Berpikir Logis</h2>
+    <p class="hero-meta">Responsi · RK. CCR 2.12 · until 14:40</p>
+  </section>
+
+  <div class="sec"><h2>Classes</h2></div>
+  <div class="surface list">
+    <div class="crow cancelled" style="cursor:default">
+      <div class="ctime">08:00<small>09:40</small></div>
+      <div class="cbody"><div class="cname">Agama Islam</div><div class="cmeta">Kuliah · RK. CCR 2.05</div><div class="chips"><span class="chip">Cancelled</span></div></div>
+    </div>
+    <details open>
+      <summary class="crow">
+        <div class="ctime">13:00<small>14:40</small></div>
+        <div class="cbody"><div class="cname">Matematika dan Berpikir Logis</div><div class="cmeta">Responsi · RK. CCR 2.12 · Week 9</div></div>
+        <svg class="i chev"><use href="#i-right"/></svg>
+      </summary>
+      <div class="expand">
+        <div class="md brief-inline"><h3>Week 9 · Derivatives</h3><ul><li>The derivative as a rate of change</li><li>Chain rule on composed functions</li></ul><h4>Questions to think about</h4><ol><li>Why is the derivative of a constant zero?</li></ol></div>
+        <div class="row-actions"><button class="btn danger" style="padding:0">Cancel class</button></div>
+      </div>
+    </details>
+    <details>
+      <summary class="crow">
+        <div class="ctime">15:00<small>15:50</small></div>
+        <div class="cbody"><div class="cname">Pendidikan Kewarganegaraan</div><div class="cmeta">Kuliah · RK. CCR 2.11</div></div>
+        <svg class="i chev"><use href="#i-right"/></svg>
+      </summary>
+    </details>
+  </div>
+
+  <div class="sec"><h2>Tasks</h2><span>1 of 3 passed</span></div>
+  <article class="surface task">
+    <div class="task-head"><span class="chip">Class</span><span class="chip">To do</span></div>
+    <p class="task-text">Explain one idea from yesterday's Math lecture to a wall, out loud, for 2 minutes.</p>
+    <div class="row-actions"><label class="btn block"><svg class="i"><use href="#i-camera"/></svg>Take photo</label></div>
+  </article>
+  <article class="surface task">
+    <div class="task-head"><span class="chip">Physical</span><span class="chip bad">Failed</span></div>
+    <p class="task-text">Take a 20 minute walk without your phone and photograph something you have never noticed.</p>
+    <div class="task-proof"><div class="thumb screen" role="img" aria-label="Proof photo"></div><p class="verdict bad"><svg class="i sm"><use href="#i-x"/></svg>Photo shows a screen, not something outdoors.</p></div>
+    <div class="row-actions"><label class="btn neutral sm"><svg class="i sm"><use href="#i-camera"/></svg>Retake photo</label></div>
+    <details class="appeal" open>
+      <summary class="disclose" style="padding:0;min-height:44px;font-size:16px"><span class="grow">Appeal</span><svg class="i chev"><use href="#i-right"/></svg></summary>
+      <textarea placeholder="Why should this count?" aria-label="Appeal note">The walk was real; I photographed the bus stop map on the way back.</textarea>
+      <p>You get one appeal per task. A sent appeal marks the task as passed.</p>
+      <div class="row-actions"><button class="btn neutral sm">Send appeal</button></div>
+    </details>
+  </article>
+  <article class="surface task done">
+    <div class="task-head"><span class="chip">Wildcard</span><span class="chip ok">Passed</span></div>
+    <p class="task-text">Write down 5 things you are curious about.</p>
+    <div class="task-proof"><div class="thumb paper" role="img" aria-label="Proof photo"></div><p class="verdict ok"><svg class="i sm"><use href="#i-check"/></svg>A handwritten list with five items is visible.</p></div>
+  </article>
+
+  <details class="surface" style="margin-top:32px">
+    <summary class="disclose"><svg class="i lead"><use href="#i-plus"/></svg><span class="grow">Add a replacement class<small>Pengganti for a moved or extra session</small></span><svg class="i chev"><use href="#i-right"/></svg></summary>
+  </details>
+</main>
+</template>
+
+<template id="s-class">
+<main class="view">
+  <div class="head"><a class="iconbtn" href="#" aria-label="Back to Today"><svg class="i"><use href="#i-left"/></svg></a></div>
+  <section class="slab">
+    <div class="hero-top"><span class="bignum">10:00</span><span class="slab-chip">Mon 26 Oct</span></div>
+    <h1 class="hero-name">Matematika dan Berpikir Logis</h1>
+    <p class="hero-meta">Kuliah · RK. CCR 2.16 · until 11:40 · Week 7</p>
+  </section>
+  <div class="sec"><h2>Briefing</h2><span>Week 7</span></div>
+  <article class="surface md" style="padding:20px">
+    <h3>Limits and continuity</h3>
+    <h4>Key ideas</h4>
+    <ul><li><strong>Epsilon–delta</strong> definition of a <code>limit</code>: how close the input must be for the output to stay close.</li><li>One-sided limits and when they disagree.</li><li>Continuity and the Intermediate Value Theorem.</li></ul>
+    <h4>Questions to think about</h4>
+    <ol><li>Why does a limit not care about the value at the point itself?</li><li>Can a function be continuous everywhere but nowhere smooth?</li><li>What does the IVT promise, and what does it not?</li></ol>
+    <h4>Terms</h4>
+    <p>limit (limit) · kontinu (continuous) · selang (interval)</p>
+  </article>
+  <div style="margin-top:24px;padding:0 4px">
+    <button class="btn danger" style="padding:0">Cancel this class</button>
+    <p class="note" style="margin-top:2px">Only before it starts. Its week goes back to the pool for the next session.</p>
+  </div>
+</main>
+</template>
+
+<template id="tabs-progress"><div class="scrim"></div><nav class="tabbar" aria-label="Sections"><a class="tab" href="#" aria-label="Today"><svg class="i"><use href="#i-home"/></svg></a><a class="tab" aria-current="page" href="#"><svg class="i"><use href="#i-bars"/></svg>Progress</a><a class="tab" href="#" aria-label="Mind"><svg class="i"><use href="#i-spark"/></svg></a><a class="tab" href="#" aria-label="More"><svg class="i"><use href="#i-more"/></svg></a></nav><div class="homebar"></div></template>
+
+<template id="s-progress">
+<main class="view">
+  <div class="head"><h1 class="title">Progress</h1></div>
+  <section class="slab" aria-label="Streak heatmap">
+    <div class="slab-title"><span>Last 16 weeks</span><span class="muted" style="font-weight:500;font-size:13px">3 tasks = full day</span></div>
+    <div class="heat"><div class="dl" aria-hidden="true"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div><div class="cells" role="img" aria-label="Streak heatmap, last 16 weeks" data-heat></div></div>
+    <div class="heat-foot"><span>6 Jul – 21 Oct</span><span class="legend">Less <i class="cell"></i><i class="cell l1"></i><i class="cell l2"></i><i class="cell l3"></i> All 3</span></div>
+  </section>
+  <div class="tiles">
+    <div class="surface tile"><div class="num hot">4</div><div class="lab">Day streak</div></div>
+    <div class="surface tile"><div class="num">9</div><div class="lab">Best streak</div></div>
+    <div class="surface tile"><div class="num">61</div><div class="lab">Tasks passed</div></div>
+    <div class="surface tile"><div class="num">14</div><div class="lab">Perfect days</div></div>
+  </div>
+  <div class="sec"><h2>What did you learn today?</h2></div>
+  <div class="surface" style="padding:16px">
+    <textarea aria-label="What did you learn today?" placeholder="A few lines is enough.">Learned why entropy only goes one way.</textarea>
+    <div class="row-actions" style="justify-content:flex-end"><button class="btn sm">Save note</button></div>
+  </div>
+  <div class="sec"><h2>Study time</h2><span>Last 14 days</span></div>
+  <div class="surface" style="padding:18px 16px 14px">
+    <div class="chart-top"><b>18h 25m</b><span>Most: 5h 20m, Fri 16</span></div>
+    <div class="cols" role="img" aria-label="Study minutes per day, last 14 days">
+      <i class="none"></i><i style="height:22%"></i><i class="none"></i><i style="height:40%"></i><i style="height:12%"></i><i class="none"></i><i class="none"></i><i class="none"></i><i style="height:100%"></i><i style="height:30%"></i><i style="height:9%"></i><i style="height:75%"></i><i style="height:58%"></i><i class="none"></i>
+    </div>
+    <div class="cols-x"><span>T</span><span>F</span><span>S</span><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span><span>M</span><span>T</span><span class="now">W</span></div>
+  </div>
+  <div class="sec"><h2>Daily summaries</h2></div>
+  <div class="surface list">
+    <div class="sum"><b>Tue 20 Oct</b><p>Studied 3h 05m, mostly Fisika Umum. Note: boredom is a feature.</p></div>
+    <div class="sum"><b>Mon 19 Oct</b><p>4h 00m across Matematika and Biologi. You finished the limits worksheet.</p></div>
+  </div>
+</main>
+</template>
+
+<template id="tabs-mind"><div class="scrim"></div><nav class="tabbar" aria-label="Sections"><a class="tab" href="#" aria-label="Today"><svg class="i"><use href="#i-home"/></svg></a><a class="tab" href="#" aria-label="Progress"><svg class="i"><use href="#i-bars"/></svg></a><a class="tab" aria-current="page" href="#"><svg class="i"><use href="#i-spark"/></svg>Mind</a><a class="tab" href="#" aria-label="More"><svg class="i"><use href="#i-more"/></svg></a></nav><div class="homebar"></div></template>
+
+<template id="s-mind">
+<main class="view">
+  <div class="head"><h1 class="title">Mind</h1></div>
+  <section class="slab" aria-label="Quote of the day" style="padding:24px 22px">
+    <p class="quote">“You shall become the person you are.”</p>
+    <div class="quote-by"><b>Friedrich Nietzsche</b><span>The Gay Science §270 (tr. Kaufmann)</span></div>
+  </section>
+  <details class="surface" style="margin-top:12px">
+    <summary class="disclose"><svg class="i lead"><use href="#i-plus"/></svg><span class="grow">Add a quote</span><svg class="i chev"><use href="#i-right"/></svg></summary>
+  </details>
+  <div class="sec"><h2>All quotes</h2><span>40</span></div>
+  <div class="surface list">
+    <div class="qrow"><p>The phone can wait. The lecture cannot.</p><div class="qfoot"><div class="cmeta"><span class="chip accent">Yours</span>Me</div><button class="btn danger" style="padding:0 4px">Remove</button></div></div>
+    <div class="qrow"><p>What does not destroy me strengthens me.</p><div class="cmeta">Friedrich Nietzsche · Twilight of the Idols, “Maxims and Arrows” §8</div></div>
+    <div class="qrow"><p>Who looks outside dreams; who looks inside awakes.</p><div class="cmeta">Carl Jung · Letter to Fanny Bowditch, 22 October 1916</div></div>
+    <div class="qrow"><p>Boredom is the root of all evil.</p><div class="cmeta">Søren Kierkegaard · Either/Or, “The Rotation of Crops”</div></div>
+    <div class="qrow"><p>In the morning when thou risest unwillingly, let this thought occur: I am rising to the work of a human being.</p><div class="cmeta">Marcus Aurelius · Meditations 5.1</div></div>
+    <div class="qrow"><p>Men are disturbed not by things, but by the principles and notions which they form concerning things.</p><div class="cmeta">Epictetus · Enchiridion 5</div></div>
+  </div>
+</main>
+</template>
+
+<template id="tabs-more"><div class="scrim"></div><nav class="tabbar" aria-label="Sections"><a class="tab" href="#" aria-label="Today"><svg class="i"><use href="#i-home"/></svg></a><a class="tab" href="#" aria-label="Progress"><svg class="i"><use href="#i-bars"/></svg></a><a class="tab" href="#" aria-label="Mind"><svg class="i"><use href="#i-spark"/></svg></a><a class="tab" aria-current="page" href="#"><svg class="i"><use href="#i-more"/></svg>More</a></nav><div class="homebar"></div></template>
+
+<template id="s-more">
+<main class="view">
+  <div class="head"><h1 class="title">More</h1></div>
+  <section class="slab" aria-label="Lock log">
+    <div class="hero-top"><span class="bignum">5</span><span class="slab-chip"><svg class="i sm"><use href="#i-shield"/></svg>App Lock</span></div>
+    <p style="margin:10px 0 0;font-weight:600;font-size:17px">blocked opens in the last 7 days</p>
+    <div class="chips" style="margin-top:12px"><span class="slab-chip">Instagram 3</span><span class="slab-chip">YouTube 1</span><span class="slab-chip">TikTok 1</span></div>
+    <details>
+      <summary>Recent<svg class="i chev"><use href="#i-right"/></svg></summary>
+      <div class="lockrow"><span>Instagram</span><span>21 Oct, 09:12</span></div>
+    </details>
+  </section>
+
+  <div class="sec"><h2>Setup</h2></div>
+  <div class="surface list" style="padding:0">
+    <a class="disclose" href="#" style="color:inherit;text-decoration:none"><svg class="i lead"><use href="#i-cal"/></svg><span class="grow">Calendar reminders<small>Weekly classes, alert 30 min before</small></span><svg class="i" style="color:var(--accent-text)"><use href="#i-down"/></svg></a>
+    <details open>
+      <summary class="disclose"><svg class="i lead"><use href="#i-hash"/></svg><span class="grow">Course start weeks<small>Skip material weeks you already covered</small></span><svg class="i chev"><use href="#i-right"/></svg></summary>
+      <div class="form-body" style="padding-top:0">
+        <div class="course">
+          <div class="cname">Matematika dan Berpikir Logis</div>
+          <div class="cmeta">Material: Kuliah 9–15 · Responsi 9–15</div>
+          <div class="line"><input class="input" inputmode="numeric" placeholder="From week 9" aria-label="Start week for Matematika dan Berpikir Logis"><button class="btn neutral sm">Save</button></div>
+        </div>
+      </div>
+    </details>
+    <details>
+      <summary class="disclose"><svg class="i lead"><use href="#i-shield"/></svg><span class="grow">App Lock shortcut<small>Block Instagram, TikTok, YouTube</small></span><svg class="i chev"><use href="#i-right"/></svg></summary>
+    </details>
+    <details>
+      <summary class="disclose"><svg class="i lead"><use href="#i-clock"/></svg><span class="grow">Time automations<small>06:00 tasks reveal · 21:00 note</small></span><svg class="i chev"><use href="#i-right"/></svg></summary>
+    </details>
+  </div>
+
+  <div class="sec"><h2>Bridge</h2><span><span class="dot"></span>Online</span></div>
+  <div class="surface list">
+    <div class="kv"><span>Server</span><span><span class="dot"></span>OK</span></div>
+    <div class="kv"><span>Mac time</span><span>21 Oct, 10:04</span></div>
+    <div class="kv"><span>Study data (YPT)</span><span>Not configured</span></div>
+    <div class="kv"><span>Last evening job</span><span>OK · 20 Oct, 21:31</span></div>
+    <div class="kv"><span>Address</span><span>nabils-mac.tail4e2a.ts.net</span></div>
+  </div>
+</main>
+</template>
+
+<template id="s-offline">
+<div class="offline" role="status"><svg class="i"><use href="#i-cloud-off"/></svg><span><b>Offline.</b> Showing saved data; changes are off.</span></div>
+<main class="view" style="padding-top:4px">
+  <div class="head">
+    <div><h1 class="title">Saturday</h1><div class="sub">24 October</div></div>
+    <div class="iconbtn-pair"><a class="iconbtn" href="#" aria-label="Previous week"><svg class="i"><use href="#i-left"/></svg></a><a class="iconbtn" href="#" aria-label="Next week"><svg class="i"><use href="#i-right"/></svg></a></div>
+  </div>
+  <nav class="week" aria-label="Week of 19 October">
+    <a class="day" href="#"><small>Mon</small><b>19</b></a><a class="day" href="#"><small>Tue</small><b>20</b></a><a class="day is-today" href="#"><small>Wed</small><b>21</b></a><a class="day" href="#"><small>Thu</small><b>22</b></a><a class="day" href="#"><small>Fri</small><b>23</b></a><a class="day" aria-current="date" href="#"><small>Sat</small><b>24</b></a><a class="day" href="#"><small>Sun</small><b>25</b></a>
+  </nav>
+  <div class="surface empty"><div class="ic"><svg class="i"><use href="#i-moon"/></svg></div><div><b>No classes on Saturday.</b><p>Enjoy the quiet. If a class gets moved here, add it as a replacement below.</p></div></div>
+
+  <div class="sec"><h2>Tasks</h2></div>
+  <div class="locked"><div class="lk"><svg class="i"><use href="#i-lock"/></svg></div><div><b>Tasks reveal at 06:00</b><div class="chips" style="margin-top:6px"><span class="chip">Class</span><span class="chip">Physical</span><span class="chip">Wildcard</span></div></div></div>
+
+  <details class="surface" style="margin-top:32px;opacity:.4" aria-disabled="true">
+    <summary class="disclose"><svg class="i lead"><use href="#i-plus"/></svg><span class="grow">Add a replacement class<small>Needs a connection</small></span><svg class="i chev"><use href="#i-right"/></svg></summary>
+  </details>
+</main>
+</template>
+
+<template id="s-states">
+<main class="view" style="padding-top:8px">
+  <div class="state-cap">Task: judging (after the photo is picked)</div>
+  <article class="surface task">
+    <div class="task-head"><span class="chip">Physical</span><span class="chip">Checking</span></div>
+    <p class="task-text">Do 30 squats, then photograph your shoes.</p>
+    <div class="row-actions"><span class="btn block neutral disabled" style="opacity:1;color:var(--ink-2)"><svg class="i spin"><use href="#i-spin"/></svg>Judging…</span></div>
+  </article>
+  <div class="state-cap">Task: passed on appeal</div>
+  <article class="surface task done">
+    <div class="task-head"><span class="chip">Class</span><span class="chip ok">Passed</span></div>
+    <p class="task-text">Teach the chain rule to someone in two sentences.</p>
+    <p class="verdict plain" style="margin-top:10px"><svg class="i sm"><use href="#i-check"/></svg>Passed on appeal.</p>
+  </article>
+  <div class="state-cap">Tasks: not generated yet</div>
+  <div class="surface empty"><div class="ic"><svg class="i"><use href="#i-clock"/></svg></div><div><b>No tasks yet.</b><p>They are made at 21:30 the evening before.</p></div></div>
+  <div class="state-cap">Replacement class form (open)</div>
+  <details class="surface" open>
+    <summary class="disclose"><svg class="i lead"><use href="#i-plus"/></svg><span class="grow">Add a replacement class</span><svg class="i chev"><use href="#i-right"/></svg></summary>
+    <div class="form-body">
+      <label class="field">Course<span class="input select-like">Pendidikan Kewarganegaraan<svg class="i sm"><use href="#i-right"/></svg></span></label>
+      <div class="field">Type<div class="seg"><span class="on">Kuliah</span><span>Responsi</span></div></div>
+      <label class="field">Date<span class="input">Sat 24 Oct 2026</span></label>
+      <div class="two"><label class="field">Start<span class="input">13:00</span></label><label class="field">End<span class="input">14:40</span></label></div>
+      <label class="field">Room <span style="font-weight:400">(optional)</span><span class="input" style="color:var(--ink-2)">RK. CCR 2.11</span></label>
+      <button class="btn block">Add class</button>
+    </div>
+  </details>
+  <div class="state-cap">Toast</div>
+  <div style="text-align:center"><span class="toast"><svg class="i sm"><use href="#i-check"/></svg>Replacement class added.</span></div>
+  <div class="state-cap">Loading (skeleton, no spinner)</div>
+  <div class="skel slab-s"></div>
+  <div class="surface" style="padding:16px;margin-top:12px"><div class="skel line" style="width:70%"></div><div class="skel line" style="width:45%"></div></div>
+  <div class="state-cap">Study time: no YPT data</div>
+  <div class="surface empty"><div class="ic"><svg class="i"><use href="#i-bars"/></svg></div><div><b>No study time yet.</b><p>YPT minutes arrive with the 21:30 evening job.</p></div></div>
+</main>
+</template>
+
+<script>
+// Board only: render each screen once per theme so light and dark cannot drift.
+const tabsFor = { 's-today': 'tabs-today', 's-class': 'tabs-today', 's-offline': 'tabs-today', 's-states': null, 's-progress': 'tabs-progress', 's-mind': 'tabs-mind', 's-more': 'tabs-more' };
+const heat = () => { // seed-like 16-week heatmap, Monday-first columns, ends Wed 21 Oct
+  const out = []; let s = 7;
+  for (let i = 0; i < 112; i++) {
+    if (i > 107) { out.push('<i class="cell future"></i>'); continue; }
+    s = (s * 9301 + 49297) % 233280; let lv = Math.floor((s / 233280) * 4);
+    if (i < 21) lv = Math.min(lv, 1);
+    if (i >= 99) lv = 3;
+    out.push(`<i class="cell${lv ? ' l' + lv : ''}${i === 107 ? ' today' : ''}"></i>`);
+  }
+  return out.join('');
+};
+document.querySelectorAll('[data-screen]').forEach(pair => {
+  const id = pair.dataset.screen;
+  for (const theme of ['light', 'dark']) {
+    const fig = document.createElement('figure');
+    fig.innerHTML = `<figcaption>${theme === 'light' ? 'Light' : 'Dark'}</figcaption>`;
+    const phone = document.createElement('div');
+    phone.className = `phone t-${theme}`;
+    phone.innerHTML = '<div class="island"></div><div class="statusbar"><span>10:04</span><span class="batt"></span></div>';
+    phone.append(document.getElementById(id).content.cloneNode(true));
+    if (tabsFor[id]) phone.append(document.getElementById(tabsFor[id]).content.cloneNode(true));
+    phone.querySelectorAll('[data-heat]').forEach(el => { el.innerHTML = heat(); });
+    phone.querySelectorAll('a[href="#"]').forEach(a => a.addEventListener('click', e => e.preventDefault()));
+    fig.append(phone);
+    pair.append(fig);
+  }
+});
+</script>
+</body>
+</html>

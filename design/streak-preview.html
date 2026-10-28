@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Streak celebration preview</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    main { max-width: 680px; margin: auto; padding-top: 36px; }
+    h1 { font: 700 34px/1.05 var(--font-round); letter-spacing: -.02em; margin: 0 0 16px; }
+    .intro { color: var(--ink-2); max-width: 50ch; }
+    .stage { min-height: 220px; display: grid; align-items: center; margin-block: 32px; }
+    .stage #toast { position: relative; left: auto; right: auto; bottom: auto; margin: auto; max-width: 100%; }
+    .preview-options { display: flex; gap: 16px; flex-wrap: wrap; align-items: end; }
+    .preview-options label { flex: 1; min-width: 130px; }
+    .motion-choice { display: flex; gap: 10px; align-items: center; margin-top: 16px; }
+    .motion-choice input { width: 20px; height: 20px; }
+    html[data-preview-reduced] #toast { animation: none; }
+    body::after { display: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Streak celebration</h1>
+    <p class="intro">A compact ember ignition, a count settle, then stillness. Planned with Astra. Each replay uses the app's actual animation code and leaves your streaks untouched.</p>
+    <div class="row-actions">
+      <button class="btn" data-kind="tasks" data-days="7">7-day task streak</button>
+      <button class="btn neutral" data-kind="moment" data-days="30">30-day Moment streak</button>
+      <button class="btn neutral" data-kind="tasks" data-days="1">First day</button>
+    </div>
+    <div class="stage"><div id="toast" role="status" aria-atomic="true" hidden></div></div>
+    <div class="preview-options">
+      <label class="field">Speed<select id="speed"><option value="1">Actual · 520 ms</option><option value="4">Slow · 4× duration</option></select></label>
+      <label class="field">Theme<select id="theme"><option value="">Device setting</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+    </div>
+    <label class="motion-choice"><input id="reduced" type="checkbox">Preview Reduced Motion</label>
+    <p class="intro">Milestones: 7, 30, 100 and 365 days. No sound, full-screen takeover, or looping flame. Normal messages, navigation, and hiding the app interrupt the celebration.</p>
+  </main>
+  <script type="module">
+    const params = new URLSearchParams(location.search);
+    const speed = document.querySelector('#speed');
+    const theme = document.querySelector('#theme');
+    const reduced = document.querySelector('#reduced');
+    speed.value = params.get('slow') ? '4' : '1';
+    theme.value = params.get('theme') || '';
+    reduced.checked = params.has('reduced');
+    const [source, index, css] = await Promise.all(['/app.js', '/index.html', '/styles.css'].map(url => fetch(url).then(r => r.text())));
+    const sprite = new DOMParser().parseFromString(index, 'text/html').querySelector('svg');
+    document.body.prepend(sprite);
+    const themeStyle = document.createElement('style');
+    const light = css.match(/:root\s*\{([^}]+)\}/)[1];
+    const dark = css.match(/@media \(prefers-color-scheme: dark\)\s*\{\s*:root\s*\{([^}]+)\}/)[1];
+    themeStyle.textContent = 'html[data-theme="light"]{' + light + '}html[data-theme="dark"]{' + dark + '}';
+    document.head.append(themeStyle);
+    const changeTheme = () => { document.documentElement.dataset.theme = theme.value; };
+    theme.addEventListener('change', changeTheme);
+    changeTheme();
+    function h(tag, props, ...kids) {
+      const el = document.createElement(tag);
+      for (const [key, value] of Object.entries(props || {})) el.setAttribute(key, value);
+      el.append(...kids.flat(Infinity).filter(k => k != null && k !== false));
+      return el;
+    }
+    const iconCode = source.slice(source.indexOf("const SVG_NS ="), source.indexOf('\nconst section ='));
+    const icon = new Function(iconCode + ';return icon;')();
+    const mq = matchMedia('(prefers-reduced-motion: reduce)');
+    const motionQuery = { get matches() { return mq.matches || reduced.checked; } };
+    const animate = (node, frames, options = {}) => {
+      if (motionQuery.matches || document.hidden) return;
+      return node.animate(frames, { ...options, duration: (options.duration || 220) * Number(speed.value), delay: (options.delay || 0) * Number(speed.value) });
+    };
+    const helper = source.slice(source.indexOf('let toastTimer;'), source.indexOf('/* ---------- api ---------- */'));
+    const { celebrateStreak, stopStreakMotion } = new Function('h', 'icon', 'animate', 'motionQuery',
+      helper + ';return {celebrateStreak, stopStreakMotion};')(h, icon, animate, motionQuery);
+    const replay = (kind, days) => celebrateStreak(kind, '2026-10-27', days, { preview: true });
+    document.querySelectorAll('[data-kind]').forEach(button => button.addEventListener('click', () => replay(button.dataset.kind, Number(button.dataset.days))));
+    const changeReduced = () => {
+      document.documentElement.toggleAttribute('data-preview-reduced', reduced.checked);
+      stopStreakMotion();
+    };
+    reduced.addEventListener('change', changeReduced);
+    changeReduced();
+    document.addEventListener('visibilitychange', () => { if (document.hidden) stopStreakMotion(); });
+    replay(params.get('kind') === 'moment' ? 'moment' : 'tasks', Number(params.get('days')) || 7);
+  </script>
+</body>
+</html>

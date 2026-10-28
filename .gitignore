@@ -1,0 +1,26 @@
+# secrets: YPT URL contains a personal key
+bridge/.env
+.env
+# runtime data
+bridge/data/
+*.sqlite3
+*.db
+# python
+__pycache__/
+.venv/
+.pytest_cache/
+# mac
+.DS_Store
+# large course PDFs stay local
+/materials
+graphify-out/
+design/shots/
+design/impl-shots/
+design/verify-shots/
+design/verify-polish/
+.impeccable/review/
+
+# publish cleanup
+/reference/
+HANDOFF.md
+.claude/

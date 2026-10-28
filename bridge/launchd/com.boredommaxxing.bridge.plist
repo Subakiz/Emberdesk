@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.boredommaxxing.bridge</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/nabils/.local/bin/uv</string>
+    <string>run</string>
+    <string>--project</string>
+    <string>bridge</string>
+    <string>uvicorn</string>
+    <string>bridge.app:app</string>
+    <string>--host</string>
+    <string>127.0.0.1</string>
+    <string>--port</string>
+    <string>8787</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/nabils/claude/Boredom-Maxxing</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>/Users/nabils/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <!-- claude reads the Pro login from the keychain by $USER; without it: "Not logged in" -->
+    <key>USER</key><string>nabils</string>
+    <key>LOGNAME</key><string>nabils</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/Users/nabils/claude/Boredom-Maxxing/bridge/data/logs/bridge.out.log</string>
+  <key>StandardErrorPath</key><string>/Users/nabils/claude/Boredom-Maxxing/bridge/data/logs/bridge.err.log</string>
+</dict>
+</plist>

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Streak motion QA</title>
+<!--
+  Side-by-side QA: reference video frame at time t (left) next to design/streak-motion.html at t (right), same scale.
+  t is milliseconds from the first grey frame; reference time = t + 1167 ms.
+  The reference video is not in the repo. Pass ?video=<file url> or use the file picker.
+  window.cmpSeek(t) resolves once both panes have painted that time (used by the Playwright loop).
+-->
+<style>
+  body { margin: 0; background: #2b2a28; color: #eee; font: 14px -apple-system, system-ui, sans-serif; }
+  .bar { display: flex; gap: 12px; align-items: center; padding: 10px 12px; flex-wrap: wrap; }
+  .bar input[type=range] { width: 420px; }
+  .panes { display: flex; gap: 8px; padding: 0 12px 12px; }
+  .pane { width: 390px; }
+  .pane b { display: block; padding: 4px 0; }
+  video, iframe { display: block; width: 390px; height: 873px; border: 0; background: #FDFDFB; object-fit: fill; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <label>t <input id="t" type="range" min="0" max="5200" step="1" value="0"></label>
+  <input id="tn" type="number" value="0" style="width:70px"> ms
+  <button id="play">Play both</button>
+  <label>Reference <input id="file" type="file" accept="video/*"></label>
+</div>
+<div class="panes">
+  <div class="pane"><b>Reference</b><video id="v" muted playsinline preload="auto"></video></div>
+  <div class="pane"><b>Prototype</b><iframe id="f" src="streak-motion.html?embed=1&qa=1"></iframe></div>
+</div>
+<script>
+'use strict';
+const OFFSET = 1.178; // seconds: t=0 in the reference clip (browser-calibrated: grey cut at 1.157 s, impact at 2.94 s; one source frame is 18 ms)
+const v = document.getElementById('v'), f = document.getElementById('f');
+const qs = new URLSearchParams(location.search);
+v.src = qs.get('video') || 'file:///private/tmp/claude-501/-Users-nabils-claude-Boredom-Maxxing/3bfdc41d-30ff-420d-a1f4-7315233b406c/scratchpad/ref/ref.mp4';
+document.getElementById('file').onchange = e => { if (e.target.files[0]) v.src = URL.createObjectURL(e.target.files[0]); };
+// paused seeks do not always fire requestVideoFrameCallback (headless Chrome); race it with two frames + 120 ms
+const frameReady = () => Promise.race([new Promise(r => v.requestVideoFrameCallback?.(() => r())), new Promise(r => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(r, 120))))]);
+let pending = null;
+addEventListener('message', e => { if (e.data && e.data.type === 'seeked' && pending) { pending(); pending = null; } });
+window.cmpSeek = async t => {
+  const vid = new Promise(r => { v.onseeked = r; v.currentTime = t / 1000 + OFFSET; }).then(frameReady);
+  const ifr = new Promise(r => { pending = r; f.contentWindow.postMessage({ type: 'seek', ms: t }, '*'); });
+  await Promise.all([vid, ifr]);
+  return t;
+};
+const tr = document.getElementById('t'), tn = document.getElementById('tn');
+tr.oninput = () => { tn.value = tr.value; cmpSeek(+tr.value); };
+tn.onchange = () => { tr.value = tn.value; cmpSeek(+tn.value); };
+document.getElementById('play').onclick = () => { v.currentTime = OFFSET; v.play(); f.contentWindow.postMessage({ type: 'play' }, '*'); };
+</script>
+</body>
+</html>
